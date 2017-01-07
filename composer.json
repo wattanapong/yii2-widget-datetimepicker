@@ -1,0 +1,25 @@
+{
+    "name": "wattanapong/yii2-widget-datetimepicker",
+    "type": "yii2-widget-datetimepicker",
+    "description": "DatetimePicker extension for the Yii2 framework",
+    "keywords": ["yii2", "datetimepicker", "extension", "wattanapong"],
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/wattanapong/yii2-widget-datetimepicker/issues",
+        "source": "https://github.com/wattanapong/yii2-widget-datetimepicker"
+    },
+    "authors": [
+        {
+            "name": "WATTANAPONG SUTTAPAK",
+            "email": "wattanapong.su@up.ac.th"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "wattanapong\\datetime\\": ""
+        }
+    }
+}
