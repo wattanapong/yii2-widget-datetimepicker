@@ -1,10 +1,8 @@
 <?php
 
 /**
- * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2016
- * @package yii2-widgets
- * @subpackage yii2-widget-datetimepicker
- * @version 1.4.2
+ * @copyright Copyright &copy; Wattanapong Suttapak, 2017
+ * @version 1.0.0
  */
 
 namespace wattanapong\datetime;
@@ -13,13 +11,12 @@ use \yii\web\AssetBundle;
 /**
  * Asset bundle for DateTimePicker Widget
  *
- * @author Kartik Visweswaran <kartikv2@gmail.com>
+ * @author Wattanapong Suttapak <wattanapong.su@up.ac.th>
  * @since 1.0
  */
 class DateTimePickerAsset extends AssetBundle
 {
-    public $sourcePath = '@bower/jquery-ui';
-    public $extSourcePath = __DIR__ . '/assets';
+    public $sourcePath = __DIR__ . '/assets';
     /**
      * @var boolean whether to automatically generate the needed language js files.
      * If this is true, the language js files will be determined based on the actual usage of [[DatePicker]]
@@ -34,23 +31,28 @@ class DateTimePickerAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        'yii\jui\JuiAsset',
+    		'yii\jui\JuiAsset' 
     ];
-
 
     /**
      * @inheritdoc
      */
     public function registerAssetFiles($view)
     {
-        if ($this->autoGenerate) {
-            $language = $this->language;
-            $fallbackLanguage = substr($this->language, 0, 2);
-            if ($fallbackLanguage !== $this->language && !file_exists(Yii::getAlias($this->sourcePath . "/ui/i18n/datepicker-{$language}.js"))) {
-                $language = $fallbackLanguage;
-            }
-            $this->js[] = "ui/i18n/datepicker-$language.js";
+        if ($this->autoGenerate) {     
+           // $this->js[] = "js/jquery.ui.datepicker.js";
+            //$this->js[] = "js/locales/jquery.ui.datepicker-th.js";
+            $this->js[] = "js/jquery.ui.datetimepicker.js";
+            //$this->js[] = "js/locales/jquery.ui.datetimepicker-th.js";
+            $this->js[] = "js/jquery.ui.datepicker.ext.be.js";
         }
         parent::registerAssetFiles($view);
+    }
+    
+    public function init()
+    {
+    	
+    	parent::init();
+    	$this->publishOptions['forceCopy'] = true;
     }
 }

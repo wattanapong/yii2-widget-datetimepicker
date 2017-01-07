@@ -3,7 +3,15 @@
  * @link http://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
  * @license http://www.yiiframework.com/license/
+ * http://www.yiiframework.com/doc-2.0/yii-jui-datepicker.html
  */
+/**
+ * Copyright (c) 2012 Paul Bakaus, http://jqueryui.com/
+ */
+/**
+/*! jQuery Timepicker Addon not yet - v1.6.3 - 2016-04-20
+* http://trentrichardson.com/examples/timepicker
+* Copyright (c) 2016 Trent Richardson; Licensed MIT */
 /**
  * @copyright Copyright &copy; Wattanapong Suttapak, 2017
  * @version 1.0.0
@@ -16,6 +24,9 @@ use yii\base\InvalidParamException;
 use yii\helpers\FormatConverter;
 use yii\helpers\Html;
 use yii\helpers\Json;
+use yii\jui\InputWidget;
+use yii\jui\JuiAsset;
+use yii\jui\DatePickerLanguageAsset;
 
 /**
  * DateTimePicker widget is a Yii2 wrapper for the Bootstrap DateTimePicker plugin by smalot
@@ -76,7 +87,16 @@ class DateTimePicker extends InputWidget
      */
     public $value;
 
+    /*
+     * @var for datetimepicker
+     */    
+    public $timeFormat= 'hh:mm:ss';
+    public $isBE = true;
+    public $changeMonth = true;
+    public $changeYear = true;
+    public $showButtonPanel = true;
 
+    public $isDateTime = true;
     /**
      * @inheritdoc
      */
@@ -89,6 +109,16 @@ class DateTimePicker extends InputWidget
         if ($this->dateFormat === null) {
             $this->dateFormat = Yii::$app->formatter->dateFormat;
         }
+        
+        $this->clientOptions = [
+        		'timeFormat'=> $this->timeFormat,
+        		'isBE'=>$this->isBE,
+        		'changeMonth'=>$this->changeMonth,
+        		'changeYear'=>$this->changeYear,
+        		'showButtonPanel'=>$this->showButtonPanel,
+        		'clientOptions' => $this->options
+        ];
+
     }
 
     /**
@@ -97,7 +127,7 @@ class DateTimePicker extends InputWidget
     public function run()
     {
         echo $this->renderWidget() . "\n";
-
+        
         $containerID = $this->inline ? $this->containerOptions['id'] : $this->options['id'];
         $language = $this->language ? $this->language : Yii::$app->language;
 
@@ -106,19 +136,35 @@ class DateTimePicker extends InputWidget
         } else {
             $this->clientOptions['dateFormat'] = FormatConverter::convertDateIcuToJui($this->dateFormat, 'date', $language);
         }
-
+		
         if ($language !== 'en-US') {
             $view = $this->getView();
-            $assetBundle = DatePickerLanguageAsset::register($view);
-            $assetBundle->language = $language;
+            //$assetBundle = DatePickerLanguageAsset::register($view);
+            $assetBundle = DateTimePickerAsset::register($view);
+           	$assetBundle->language = $language;
             $options = Json::htmlEncode($this->clientOptions);
             $language = Html::encode($language);
-            $view->registerJs("$('#{$containerID}').datepicker($.extend({}, $.datepicker.regional['{$language}'], $options));");
+            if ($this->isDateTime )
+            	$view->registerJs("$('#{$containerID}').datetimepicker($.extend({}, $.datepicker.regional['{$language}'], $options));");
+            else 
+            	$view->registerJs("$('#{$containerID}').datepicker($.extend({}, $.datepicker.regional['{$language}'], $options));");
+            	
+            	$bundle = $this->getView()->assetManager->getBundle('wattanapong\datetime\DateTimePickerAsset' );
+            	$bundle->js[] = ['js/locales/jquery.ui.datepicker-'.$language.'.js'];
+
+            	if ($this->language == 'th')
+            		$bundle->js[] = ['js/locales/jquery.ui.datetimepicker-'.$language.'.js'];
         } else {
-            $this->registerClientOptions('datepicker', $containerID);
+            $this->registerClientOptions('datetimepicker', $containerID);
         }
 
-        $this->registerClientEvents('datepicker', $containerID);
+        $this->registerClientEvents('datetimepicker', $containerID);
+       
+        $bundle = $this->getView()->assetManager->getBundle('yii\jui\JuiAsset' );
+        $bundle->css = [
+        						'themes/flick/jquery-ui.css',
+        ];
+
         JuiAsset::register($this->getView());
     }
 
