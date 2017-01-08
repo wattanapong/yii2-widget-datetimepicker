@@ -27,6 +27,7 @@ use yii\helpers\Json;
 use yii\jui\InputWidget;
 use yii\jui\JuiAsset;
 use yii\jui\DatePickerLanguageAsset;
+use common\components\Util;
 
 /**
  * DateTimePicker widget is a Yii2 wrapper for the Bootstrap DateTimePicker plugin by smalot
@@ -54,7 +55,7 @@ class DateTimePicker extends InputWidget
      * @var array the HTML attributes for the container tag. This is only used when [[inline]] is true.
      * @see \yii\helpers\Html::renderTagAttributes() for details on how attributes are being rendered.
      */
-    public $containerOptions = [];
+    public $containerOptions;
     /**
      * @var string the format string to be used for formatting the date value. This option will be used
      * to populate the [[clientOptions|clientOption]] `dateFormat`.
@@ -88,14 +89,11 @@ class DateTimePicker extends InputWidget
     public $value;
 
     /*
-     * @var for datetimepicker
+     * @array for plugin jquery datepicker
      */    
-    public $timeFormat= 'hh:mm:ss';
-    public $isBE = true;
-    public $changeMonth = true;
-    public $changeYear = true;
-    public $showButtonPanel = true;
-
+   
+    public $pluginOptions;
+    
     public $isDateTime = true;
     /**
      * @inheritdoc
@@ -103,22 +101,28 @@ class DateTimePicker extends InputWidget
     public function init()
     {
         parent::init();
+        
+       // array_merge($this->pluginOptions,['minDate'=>'-100Y','maxDate'=>'100Y']);
+        
         if ($this->inline && !isset($this->containerOptions['id'])) {
             $this->containerOptions['id'] = $this->options['id'] . '-container';
         }
         if ($this->dateFormat === null) {
             $this->dateFormat = Yii::$app->formatter->dateFormat;
         }
-        
-        $this->clientOptions = [
-        		'timeFormat'=> $this->timeFormat,
-        		'isBE'=>$this->isBE,
-        		'changeMonth'=>$this->changeMonth,
-        		'changeYear'=>$this->changeYear,
-        		'showButtonPanel'=>$this->showButtonPanel,
-        		'clientOptions' => $this->options
-        ];
 
+        if ( isset($this->pluginOptions['maxDate'] ) && $this->pluginOptions['maxDate'] !== null 
+        		&& $this->pluginOptions['maxDate'] !== ''  ){
+        	$this->pluginOptions['maxDate'] = $this->getMaxMin($this->pluginOptions['maxDate']);
+        	//echo "max ".$this->pluginOptions['maxDate']."<br>";
+        }
+        
+        if ( isset($this->pluginOptions['minDate'] ) && $this->pluginOptions['minDate'] !== null 
+        		&& $this->pluginOptions['minDate'] !== ''  ){
+        	$this->pluginOptions['minDate'] = $this->getMaxMin($this->pluginOptions['minDate'],false);
+        	//echo "min ".$this->pluginOptions['minDate']."<br>";
+        }
+       $this->clientOptions = array_merge($this->clientOptions,$this->pluginOptions);
     }
 
     /**
@@ -177,11 +181,11 @@ class DateTimePicker extends InputWidget
         $contents = [];
 
         // get formatted date value
-        if ($this->hasModel()) {
+        $value = $this->value;
+        if ( ($value == null || $value == '' )  && $this->hasModel() ) {
             $value = Html::getAttributeValue($this->model, $this->attribute);
-        } else {
-            $value = $this->value;
         }
+        
         if ($value !== null && $value !== '') {
             // format value according to dateFormat
             try {
@@ -213,6 +217,17 @@ class DateTimePicker extends InputWidget
         }
 
         return implode("\n", $contents);
+    }
+    
+    private function getMaxMin($datetime,$isMax=true){
+    	$start = new \DateTime('now');// (new \DateTime())->format('d M Y'); 
+    	$end = new \DateTime($datetime);
+    	
+    	if ($isMax) 
+    		$end->add(new \DateInterval('P1D'));
+    	
+    	$interval = $start->diff($end);
+    	return $interval->format('%R%yY %R%mM %R%dD');
     }
 }
 

@@ -13,7 +13,7 @@ This version 1.0.0
 It's completed version of datetimepicker work on jquery-ui less than version 1.9 .
 This version support datepicker and datetimepicker via Datetimepicker::Classname
 
-#Installation
+## Installation
 --------------
 --------------
 
@@ -25,17 +25,44 @@ or add
 
 "wattanapong/yii2-widget-datetimepicker" : "@dev"
 
-#How to use
+## Usage
 All of usage base on jquery-ui
---------------
---------------
-example
+
+```php
+use wattanapong\datetime\DateTimePicker;
+
+// usage without model
+echo '<label>Check Issue Date</label>';
+echo DateTimePicker::widget([
+	'name' => 'attributename', 
+	'value' => date('d M Y', strtotime('+2 days')),
+	'options' => ['placeholder' => 'Select date ...'],
+	'pluginOptions' => [
+		'format' => 'dd-M-yyyy',
+		'todayHighlight' => true,
+		'isBE' => true,	
+		'timeFormat' => 'hh:mm:ss',
+		'buttonImageOnly'=> true,
+		'maxDate' => date('d M Y',strtotime('+2 days')),
+		'minDate' => date('d M Y',strtotime('-10 days')),
+	]
+]);
+```
+
 <?= $form->field($model, 'attributename')->widget(DateTimePicker::className(),
     [
-    	'language' => 'th',
     	'dateFormat' => 'php:d M yy',
-    	'isDateTime' => true,
-    	'timeFormat' => 'h:m:s',
-    	'options' => ['class'=>'form-control'],
+		'isDateTime' => false,
+		'name' => 'attributename',
+		'value' => date('d M Y', strtotime('+2 days')),
+		'options' => ['class'=>'form-control','placeholder' => 'Select date ...'],
+		'pluginOptions' =>[
+			'isBE' => true,	
+			'timeFormat' => 'hh:mm:ss',
+			'buttonImageOnly'=> true,
+			'maxDate' => date('d M Y',strtotime('+2 days')),
+			'minDate' => date('d M Y',strtotime('-10 days')),
+		]
    	]
 )?>
+```
