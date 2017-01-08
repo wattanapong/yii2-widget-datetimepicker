@@ -29,6 +29,7 @@ or add
 All of usage base on jquery-ui
 
 ```php
+
 use wattanapong\datetime\DateTimePicker;
 
 // usage without model
@@ -47,7 +48,8 @@ echo DateTimePicker::widget([
 		'minDate' => date('d M Y',strtotime('-10 days')),
 	]
 ]);
-```
+
+// usage with model
 
 <?= $form->field($model, 'attributename')->widget(DateTimePicker::className(),
     [
