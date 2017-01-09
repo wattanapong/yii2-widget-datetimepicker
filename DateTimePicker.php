@@ -81,12 +81,17 @@ class DateTimePicker extends InputWidget
      * with the [[dateFormat]] if it is not null.
      */
     public $attribute;
+    public $from,$to;
+    public $valueTo;
+    private $isRange = false;
+    public $separate = ' ถึง ';
     /**
      * @var string the input value.
      * This value will be converted using [[\yii\i18n\Formatter::asDate()|`Yii::$app->formatter->asDate()`]]
      * with the [[dateFormat]] if it is not null.
      */
     public $value;
+    
 
     /*
      * @array for plugin jquery datepicker
@@ -101,27 +106,49 @@ class DateTimePicker extends InputWidget
     public function init()
     {
         parent::init();
-        
-       // array_merge($this->pluginOptions,['minDate'=>'-100Y','maxDate'=>'100Y']);
-        
+
         if ($this->inline && !isset($this->containerOptions['id'])) {
             $this->containerOptions['id'] = $this->options['id'] . '-container';
         }
         if ($this->dateFormat === null) {
             $this->dateFormat = Yii::$app->formatter->dateFormat;
         }
+        
+        //check is from to attribute
+        $isFrom = $isTo = false ; 
+        $this->isRange = true;
+        if ($this->from !== null && $this->from !== ''  ) $isFrom = true;
+        if ($this->to !== null && $this->to !== ''  ) $isTo = true;
+        
+        if ( $isFrom && !$isTo ) $this->to = $this->from;
+        elseif ( !$isFrom && $isTo ) $this->from = $this->to;
+        elseif ( !$isFrom && !$isTo )  $this->isRange = false;
 
+        //config maxDate
         if ( isset($this->pluginOptions['maxDate'] ) && $this->pluginOptions['maxDate'] !== null 
         		&& $this->pluginOptions['maxDate'] !== ''  ){
         	$this->pluginOptions['maxDate'] = $this->getMaxMin($this->pluginOptions['maxDate']);
-        	//echo "max ".$this->pluginOptions['maxDate']."<br>";
         }
         
+        //config minDate
         if ( isset($this->pluginOptions['minDate'] ) && $this->pluginOptions['minDate'] !== null 
         		&& $this->pluginOptions['minDate'] !== ''  ){
         	$this->pluginOptions['minDate'] = $this->getMaxMin($this->pluginOptions['minDate'],false);
-        	//echo "min ".$this->pluginOptions['minDate']."<br>";
         }
+        
+        //config maxDate
+        if ( isset($this->pluginOptions['maxDateTo'] ) && $this->pluginOptions['maxDateTo'] !== null
+        		&& $this->pluginOptions['maxDateTo'] !== ''  ){
+        			$this->pluginOptions['maxDateTo'] = $this->getMaxMin($this->pluginOptions['maxDateTo']);
+        }
+        
+        //config minDate
+        if ( isset($this->pluginOptions['minDateTo'] ) && $this->pluginOptions['minDateTo'] !== null
+        		&& $this->pluginOptions['minDateTo'] !== ''  ){
+        			$this->pluginOptions['minDateTo'] = $this->getMaxMin($this->pluginOptions['minDateTo'],false);
+        }
+        
+        //merge pluginOptions to clientOptions
        $this->clientOptions = array_merge($this->clientOptions,$this->pluginOptions);
     }
 
@@ -130,7 +157,7 @@ class DateTimePicker extends InputWidget
      */
     public function run()
     {
-        echo $this->renderWidget() . "\n";
+        echo ($this->isRange?$this->renderWidgetDateRange():$this->renderWidget()) . "\n";
         
         $containerID = $this->inline ? $this->containerOptions['id'] : $this->options['id'];
         $language = $this->language ? $this->language : Yii::$app->language;
@@ -148,15 +175,43 @@ class DateTimePicker extends InputWidget
            	$assetBundle->language = $language;
             $options = Json::htmlEncode($this->clientOptions);
             $language = Html::encode($language);
-            if ($this->isDateTime )
-            	$view->registerJs("$('#{$containerID}').datetimepicker($.extend({}, $.datepicker.regional['{$language}'], $options));");
-            else 
-            	$view->registerJs("$('#{$containerID}').datepicker($.extend({}, $.datepicker.regional['{$language}'], $options));");
-            	
+            
+            $picker = "date".($this->isDateTime?"time":"")."picker";
+
+            	if (!$this->isRange){
+            		$script = "$('#{$containerID}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options));";
+            		
+            	}else {
+            		$script = "$('#{$this->from}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options))";
+            		$script .= ".on( 'change', function() { $('#{$this->to}').{$picker}( 'option', 'minDate', getDate( this ) );}),";
+            		
+            		//parsing maxDateTo and minDateTo to clientOptions afterward jsonencode to $options
+            		//Util::viewArr( $this->clientOptions);
+            		$this->clientOptions['maxDate'] = isset($this->clientOptions['maxDateTo'])?$this->clientOptions['maxDateTo']:'' ;
+            		$this->clientOptions['minDate'] =  isset($this->clientOptions['minDateTo'])? $this->clientOptions['minDateTo']:'';
+            		$options = Json::htmlEncode($this->clientOptions);
+            		
+            		$script .= "$('#{$this->to}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options))";
+            		$script .= ".on( 'change', function() { $('#{$this->from}').{$picker}( $.extend({}, $.datepicker.regional['{$language}'], $options) );});";
+            		
+            		$script .= "
+            				function getDate( element ) {
+						      var date;
+						      try {
+						        date = $.datepicker.parseDate( dateFormat, element.value );
+						      } catch( error ) {
+						        date = null;
+						      }
+						 
+						      return date;
+						    }";
+            	}
+	
+            $view->registerJs($script);
             	$bundle = $this->getView()->assetManager->getBundle('wattanapong\datetime\DateTimePickerAsset' );
             	$bundle->js[] = ['js/locales/jquery.ui.datepicker-'.$language.'.js'];
 
-            	if ($this->language == 'th')
+            	if ($language == 'th')
             		$bundle->js[] = ['js/locales/jquery.ui.datetimepicker-'.$language.'.js'];
         } else {
             $this->registerClientOptions('datetimepicker', $containerID);
@@ -183,7 +238,7 @@ class DateTimePicker extends InputWidget
         // get formatted date value
         $value = $this->value;
         if ( ($value == null || $value == '' )  && $this->hasModel() ) {
-            $value = Html::getAttributeValue($this->model, $this->attribute);
+        		$value = Html::getAttributeValue($this->model, $this->attribute);
         }
         
         if ($value !== null && $value !== '') {
@@ -217,6 +272,96 @@ class DateTimePicker extends InputWidget
         }
 
         return implode("\n", $contents);
+    }
+    
+    /**
+     * Renders the DatePicker widget in DateRange Mode. 
+     * @return string the rendering result.
+     */
+    protected function renderWidgetDateRange()
+    {
+    	$contents = [];
+    	$content2s = [];
+    
+    	$value = $this->value;
+    	$valueTo= $this->valueTo;
+    	
+    	//send value to hasModel() in InputWidget
+    	$this->attribute = $this->from;
+    	
+    	// get formatted date value
+    	if ( ($value == null || $value == '' )  && $this->hasModel() ) {
+    		$value = Html::getAttributeValue($this->model, $this->from);
+    	}
+    	
+    	
+    	if ( ($valueTo == null || $valueTo == '' )  && $this->hasModel() ) {
+    		$valueTo = Html::getAttributeValue($this->model, $this->to);
+    	}
+    
+    	if ($value !== null && $value !== '') {
+    		// format value according to dateFormat
+    		try {
+    			$value = Yii::$app->formatter->asDate($value, $this->dateFormat);
+    		} catch(InvalidParamException $e) {
+    			// ignore exception and keep original value if it is not a valid date
+    		}
+    	}
+    	
+    	if ($valueTo !== null && $valueTo !== '') {
+    		// format value according to dateFormat
+    		try {
+    			$valueTo = Yii::$app->formatter->asDate($valueTo, $this->dateFormat);
+    		} catch(InvalidParamException $e) {
+    			// ignore exception and keep original value if it is not a valid date
+    		}
+    	}
+    	
+    	$options = $this->options;
+    	$options['value'] = $value;
+    
+    	if ($this->inline === false) {  
+    		// render a text input
+    		if ($this->hasModel()) {
+    			$options['id'] = $this->from;
+    			$contents[] = Html::activeTextInput($this->model, $this->from, $options);
+    			
+    			$options['id'] = $this->to;
+    			$options['value'] = $valueTo;
+    			$content2s[] = Html::activeTextInput($this->model, $this->to, $options);
+    		} else {
+    			$options['id'] = $this->from;
+    			$contents[] = Html::textInput($this->from, $value, $options);
+    			
+    			$options['value'] = $valueTo;
+    			$options['id'] = $this->to;
+    			$content2s[] = Html::textInput($this->to, $valueTo, $options);
+    		}
+    	} else { 
+    		// render an inline date picker with hidden input
+    		if ($this->hasModel()) {
+    			$contents[] = Html::activeHiddenInput($this->model, $this->from, $options);
+    			$options['value'] = $valueTo;
+    			$content2s[] = Html::activeHiddenInput($this->model, $this->to, $options);
+    		} else {
+    			$contents[] = Html::hiddenInput($this->from, $value, $options);
+    			$options['value'] = $valueTo;
+    			$content2s[] = Html::hiddenInput($this->to, $valueTo, $options);
+    		}
+    		$this->clientOptions['defaultDate'] = $value;
+    		$this->clientOptions['altField'] = '#' . $this->from;
+    		$contents[] = Html::tag('div', null, $this->containerOptions);
+    		
+    		$this->clientOptions['defaultDate'] = $valueTo;
+    		$this->clientOptions['altField'] = '#' . $this->to;
+    		$content2s[] = Html::tag('div', null, $this->containerOptions);
+    	}
+    
+    	return '<div class="inline"><div class="input-group">'.
+    	implode("\n", $contents).
+    	'<div class="input-group-addon"> '.$this->separate.' </div>'.
+    	implode("\n", $content2s).
+    	'</div></div>';
     }
     
     private function getMaxMin($datetime,$isMax=true){

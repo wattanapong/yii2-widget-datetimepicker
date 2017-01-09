@@ -28,6 +28,8 @@ or add
 ## Usage
 All of usage base on jquery-ui
 
+### DateTimePicker
+
 ```php
 
 use wattanapong\datetime\DateTimePicker;
@@ -67,4 +69,34 @@ echo DateTimePicker::widget([
 		]
    	]
 )?>
+```
+
+### DateTimePicker with DateRange 
+cannot use inline option
+```php
+
+use wattanapong\datetime\DateTimePicker;
+
+// usage without model
+echo '<label>Check Issue Date</label>';
+echo DateTimePicker::widget([
+	//'model' => $modelTrainingCourse,
+	'from' => 'trainingdate',
+	'value' => date('d M Y'),
+	'to' => 'trainingend',
+	'valueTo' => date('d M Y', strtotime('+2 days')),
+	'dateFormat' => 'php:d M yy',
+	'isDateTime' => true,
+	//'separate' => 'To',
+	'options' => ['class'=>'form-control','placeholder' => 'Select date ...'],
+	'pluginOptions' =>[
+		'isBE' => true,	
+		'timeFormat' => 'hh:mm:ss',
+		'showButtonPanel' => true,
+		'maxDate' => date('d M Y'),
+		'minDate' => date('d M Y',strtotime('-10 days')),
+		'maxDateTo' => date('d M Y',strtotime('+30 days')),
+		'minDateTo' => date('d M Y',strtotime('-10 days')),
+	]
+]);
 ```
