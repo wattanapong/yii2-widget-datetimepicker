@@ -33,6 +33,11 @@ class DateTimePickerAsset extends AssetBundle
     public $depends = [
     		'yii\jui\JuiAsset' 
     ];
+    
+    public $js = [
+    		'js/jquery.ui.datetimepicker.js',
+    		'js/jquery.ui.datepicker.ext.be.js'
+    ];
 
     /**
      * @inheritdoc
@@ -40,10 +45,7 @@ class DateTimePickerAsset extends AssetBundle
     public function registerAssetFiles($view)
     {
         if ($this->autoGenerate) {     
-           // $this->js[] = "js/jquery.ui.datepicker.js";
-            //$this->js[] = "js/locales/jquery.ui.datepicker-th.js";
             $this->js[] = "js/jquery.ui.datetimepicker.js";
-            //$this->js[] = "js/locales/jquery.ui.datetimepicker-th.js";
             $this->js[] = "js/jquery.ui.datepicker.ext.be.js";
         }
         parent::registerAssetFiles($view);

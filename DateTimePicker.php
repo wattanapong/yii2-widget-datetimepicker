@@ -161,6 +161,7 @@ class DateTimePicker extends InputWidget
         
         $containerID = $this->inline ? $this->containerOptions['id'] : $this->options['id'];
         $language = $this->language ? $this->language : Yii::$app->language;
+        $language = strtolower( substr($language, 0,2));
 
         if (strncmp($this->dateFormat, 'php:', 4) === 0) {
             $this->clientOptions['dateFormat'] = FormatConverter::convertDatePhpToJui(substr($this->dateFormat, 4));
@@ -168,7 +169,7 @@ class DateTimePicker extends InputWidget
             $this->clientOptions['dateFormat'] = FormatConverter::convertDateIcuToJui($this->dateFormat, 'date', $language);
         }
 		
-        if ($language !== 'en-US') {
+        if ($language !== 'en-US' && $language !== 'en' && $language !== 'EN' ) {
             $view = $this->getView();
             //$assetBundle = DatePickerLanguageAsset::register($view);
             $assetBundle = DateTimePickerAsset::register($view);
