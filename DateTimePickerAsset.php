@@ -16,7 +16,7 @@ use \yii\web\AssetBundle;
  */
 class DateTimePickerAsset extends AssetBundle
 {
-    public $sourcePath = __DIR__ . '/assets';
+    public $sourcePath ;
     /**
      * @var boolean whether to automatically generate the needed language js files.
      * If this is true, the language js files will be determined based on the actual usage of [[DatePicker]]
@@ -44,16 +44,12 @@ class DateTimePickerAsset extends AssetBundle
      */
     public function registerAssetFiles($view)
     {
-        if ($this->autoGenerate) {     
-            $this->js[] = "js/jquery.ui.datetimepicker.js";
-            $this->js[] = "js/jquery.ui.datepicker.ext.be.js";
-        }
         parent::registerAssetFiles($view);
     }
     
     public function init()
     {
-    	
+    	$this->sourcePath = __DIR__.'/assets';
     	parent::init();
     	$this->publishOptions['forceCopy'] = true;
     }

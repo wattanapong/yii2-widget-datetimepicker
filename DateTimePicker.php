@@ -92,6 +92,11 @@ class DateTimePicker extends InputWidget
      */
     public $value;
     
+    /**
+     * 
+     * @var theme for jquery ui theme base on vendor\bower\jquery-ui\themes\
+     */
+    public $theme;
 
     /*
      * @array for plugin jquery datepicker
@@ -147,6 +152,9 @@ class DateTimePicker extends InputWidget
         		&& $this->pluginOptions['minDateTo'] !== ''  ){
         			$this->pluginOptions['minDateTo'] = $this->getMaxMin($this->pluginOptions['minDateTo'],false);
         }
+        
+        //get Theme
+        $this->theme = isset($this->pluginOptions['theme'])?$this->pluginOptions['theme']:"base";
         
         //merge pluginOptions to clientOptions
        $this->clientOptions = array_merge($this->clientOptions,$this->pluginOptions);
@@ -222,10 +230,8 @@ class DateTimePicker extends InputWidget
        
         $bundle = $this->getView()->assetManager->getBundle('yii\jui\JuiAsset' );
         $bundle->css = [
-        						'themes/flick/jquery-ui.css',
+        						'themes/'.$this->theme.'/jquery-ui.css',
         ];
-
-        JuiAsset::register($this->getView());
     }
 
     /**
