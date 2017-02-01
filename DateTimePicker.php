@@ -191,8 +191,8 @@ class DateTimePicker extends InputWidget
             		$script = "$('#{$containerID}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options));";
             		
             	}else {
-            		$script = "$('#{$this->from}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options))";
-            		$script .= ".on( 'change', function() { $('#{$this->to}').{$picker}( 'option', 'minDate', getDate( this ) );}),";
+            		$script = "$('#{$this->from}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options));";
+            		//$script .= ".on( 'change', function() { $('#{$this->to}').{$picker}( 'option', 'minDate', getDate( this ) );}),";
             		
             		//parsing maxDateTo and minDateTo to clientOptions afterward jsonencode to $options
             		//Util::viewArr( $this->clientOptions);
@@ -200,8 +200,8 @@ class DateTimePicker extends InputWidget
             		$this->clientOptions['minDate'] =  isset($this->clientOptions['minDateTo'])? $this->clientOptions['minDateTo']:'';
             		$options = Json::htmlEncode($this->clientOptions);
             		
-            		$script .= "$('#{$this->to}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options))";
-            		$script .= ".on( 'change', function() { $('#{$this->from}').{$picker}( $.extend({}, $.datepicker.regional['{$language}'], $options) );});";
+            		$script .= "$('#{$this->to}').{$picker}($.extend({}, $.datepicker.regional['{$language}'], $options));";
+            		//$script .= ".on( 'change', function() { $('#{$this->from}').{$picker}( $.extend({}, $.datepicker.regional['{$language}'], $options) );});";
             		
             		$script .= "
             				function getDate( element ) {
